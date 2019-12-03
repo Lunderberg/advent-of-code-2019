@@ -9,6 +9,7 @@ def get_puzzle_input(puzzle = None, puzzle_input_folder = None):
 
     if puzzle_input_folder is None:
         puzzle_input_folder = os.path.join(os.path.dirname(__file__),
+                                           os.pardir,
                                            'puzzle_inputs')
 
     filename = os.path.join(puzzle_input_folder, puzzle+'.txt')
