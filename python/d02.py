@@ -28,6 +28,8 @@ class Interpreter:
         self.memory[xi] = x
         self.ip += 4
 
+        return False
+
     def iterate_until_done(self):
         done = False
         while not done:
