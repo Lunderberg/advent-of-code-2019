@@ -42,9 +42,14 @@ def main():
 
     intersections = set(path_a) & set(path_b)
 
-    #closest = min(intersections, key = manhattan_dist)
-    closest = min(intersections, key = lambda p:path_a[p]+path_b[p])
-    print(closest, path_a[closest]+path_b[closest])
+    manhattan = lambda p: abs(p[0]) + abs(p[1])
+    distance = lambda p: path_a[p] + path_b[p]
+
+    closest = min(intersections, key = manhattan)
+    print(closest, manhattan(closest))
+
+    closest = min(intersections, key = distance)
+    print(closest, distance(closest))
 
 
 
