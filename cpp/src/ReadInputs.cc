@@ -28,13 +28,10 @@
 #include <streambuf>
 #include <string>
 
-std::vector<int> read_inputs(std::string filename) {
+std::vector<int> read_integers(std::string filename) {
+  auto contents = read_file(filename);
+
   std::regex re_integer("[0-9]+");
-
-  std::ifstream ifile(filename);
-  auto contents = std::string(std::istreambuf_iterator<char>(ifile),
-                              std::istreambuf_iterator<char>());
-
   std::sregex_iterator begin(contents.begin(), contents.end(), re_integer);
   std::sregex_iterator end;
 
@@ -47,4 +44,11 @@ std::vector<int> read_inputs(std::string filename) {
   }
 
   return output;
+}
+
+std::string read_file(std::string filename) {
+  std::ifstream ifile(filename);
+  auto contents = std::string(std::istreambuf_iterator<char>(ifile),
+                              std::istreambuf_iterator<char>());
+  return contents;
 }

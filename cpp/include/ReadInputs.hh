@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
-std::vector<int> read_inputs(std::string filename);
+std::string read_file(std::string filename);
+
+std::vector<int> read_integers(std::string filename);
 
 #endif /* _READINPUTS_H_ */

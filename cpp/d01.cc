@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
 
   std::string puzzle_input_file(argv[1]);
 
-  auto inputs = read_inputs(puzzle_input_file);
+  auto inputs = read_integers(puzzle_input_file);
 
   int total_fuel = 0;
   for(auto weight : inputs) {

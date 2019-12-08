@@ -18,7 +18,7 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  auto inputs = read_inputs(argv[1]);
+  auto inputs = read_integers(argv[1]);
   std::cout << "1202 -> " << apply_func(12, 2, inputs) << std::endl;
 
   for(int a=0; a<100; a++) {
