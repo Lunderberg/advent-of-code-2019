@@ -31,7 +31,7 @@
 std::vector<int> read_integers(std::string filename) {
   auto contents = read_file(filename);
 
-  std::regex re_integer("[0-9]+");
+  std::regex re_integer("-?[0-9]+");
   std::sregex_iterator begin(contents.begin(), contents.end(), re_integer);
   std::sregex_iterator end;
 
