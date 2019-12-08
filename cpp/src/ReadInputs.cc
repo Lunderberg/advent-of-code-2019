@@ -52,3 +52,15 @@ std::string read_file(std::string filename) {
                               std::istreambuf_iterator<char>());
   return contents;
 }
+
+std::vector<std::string> read_lines(std::string filename) {
+  std::vector<std::string> output;
+  std::string line;
+
+  std::ifstream ifile(filename);
+  while(std::getline(ifile, line)) {
+    output.push_back(std::move(line));
+  }
+
+  return output;
+}
