@@ -6,19 +6,25 @@
 #include <utility>
 
 IntCode::IntCode(std::vector<int> initial_memory)
-  : memory(std::move(initial_memory)), ip(0) { }
+  : memory(std::move(initial_memory)), ip(0),
+    done(false), paused(false)
+{ }
 
 void IntCode::send_input(int i) {
   inputs.push(i);
+  paused = false;
 }
 
 int IntCode::get_output() {
+  if(outputs.size() == 0) {
+    throw std::runtime_error("No output to get");
+  }
   int output = outputs.front();
   outputs.pop();
   return output;
 }
 
-bool IntCode::iterate() {
+void IntCode::iterate() {
   int opcode = at(ip) % 100;
 
   switch(opcode) {
@@ -59,13 +65,12 @@ bool IntCode::iterate() {
       break;
   }
 
-  return (opcode == 99);
+  done = (opcode == 99);
 }
 
 void IntCode::iterate_until_done() {
-  bool done = false;
-  while(!done) {
-    done = iterate();
+  while(!done && !paused) {
+    iterate();
   }
 }
 
@@ -112,10 +117,14 @@ void IntCode::op_mul() {
 }
 
 void IntCode::op_input() {
-  int x = inputs.front();
-  inputs.pop();
-  at(at(ip+1)) = x;
-  ip += 2;
+  if(inputs.size()) {
+    int x = inputs.front();
+    inputs.pop();
+    at(at(ip+1)) = x;
+    ip += 2;
+  } else {
+    paused = true;
+  }
 }
 
 void IntCode::op_output() {
