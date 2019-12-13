@@ -91,7 +91,7 @@ class Interpreter:
         elif mode==2:
             val = self.memory[val + self.relative_base]
         else:
-            raise ValueError('Unknown mode {} at ip={}, value='.format(
+            raise ValueError('Unknown mode {} at ip={}, value={}'.format(
                 mode, self.ip, self.memory[self.ip]
             ))
 

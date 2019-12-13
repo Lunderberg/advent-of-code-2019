@@ -5,27 +5,28 @@
 #include <stdexcept>
 #include <utility>
 
-IntCode::IntCode(std::vector<int> initial_memory)
-  : memory(std::move(initial_memory)), ip(0),
+IntCode::IntCode(std::vector<long> initial_memory)
+  : memory(std::move(initial_memory)),
+    ip(0), relative_base(0),
     done(false), paused(false)
 { }
 
-void IntCode::send_input(int i) {
+void IntCode::send_input(long i) {
   inputs.push(i);
   paused = false;
 }
 
-int IntCode::get_output() {
+long IntCode::get_output() {
   if(outputs.size() == 0) {
     throw std::runtime_error("No output to get");
   }
-  int output = outputs.front();
+  long output = outputs.front();
   outputs.pop();
   return output;
 }
 
 void IntCode::iterate() {
-  int opcode = at(ip) % 100;
+  long opcode = at(ip) % 100;
 
   switch(opcode) {
     case 1:
@@ -53,6 +54,7 @@ void IntCode::iterate() {
       op_eq();
       break;
     case 9:
+      op_adjust_relative_base();
       break;
     case 99:
       break;
@@ -74,53 +76,99 @@ void IntCode::iterate_until_done() {
   }
 }
 
-int IntCode::get_param(int param) {
-  int mode = memory.at(ip)/100;
-  for(int i=1; i<param; i++) {
+long IntCode::get_mode(long param) {
+  long mode = at(ip)/100;
+  for(long i=1; i<param; i++) {
     mode /= 10;
   }
   mode %= 10;
+  return mode;
+}
 
-  int value = memory.at(ip+param);
-  if(!mode) {
-    value = memory.at(value);
+long IntCode::get_param(long param) {
+  long mode = get_mode(param);
+
+  long value = at(ip+param);
+  if(mode==0) {
+    value = at(value);
+  } else if (mode==1) {
+    value = value;
+  } else if (mode==2) {
+    value = at(value + relative_base);
+  } else {
+    std::stringstream ss;
+    ss << "Unknown mode " << mode
+       << " at ip=" << ip
+       << ", value=" << at(ip);
+    throw std::runtime_error(ss.str());
   }
   return value;
 }
 
-int& IntCode::at(int i) {
-  return memory.at(i);
+void IntCode::set_param(long param, long val) {
+  long mode = get_mode(param);
+
+  long addr = at(ip + param);
+  if(mode==0) {
+    set_memory(addr, val);
+  } else if (mode==1) {
+    throw std::runtime_error("Cannot use mode==1 (immediate mode) for output params");
+  } else if (mode==2) {
+    set_memory(addr + relative_base, val);
+  } else {
+    std::stringstream ss;
+    ss << "Unknown mode " << mode
+       << " at ip=" << ip
+       << ", value=" << at(ip);
+    throw std::runtime_error(ss.str());
+  }
 }
 
-int IntCode::value_at(int i) const {
+long IntCode::at(long i) {
+  if((unsigned long)i < memory.size()) {
+    return memory.at(i);
+  } else {
+    return 0;
+  }
+}
+
+void IntCode::set_memory(long i, long val) {
+  if((unsigned long)i >= memory.size()) {
+    memory.resize(i+1, 0);
+  }
+
+  memory.at(i) = val;
+}
+
+long IntCode::value_at(long i) const {
   return memory.at(i);
 }
 
 void IntCode::op_add() {
-  int a = get_param(1);
-  int b = get_param(2);
-  int x = a + b;
+  long a = get_param(1);
+  long b = get_param(2);
+  long x = a + b;
 
-  at(at(ip+3)) = x;
+  set_param(3, x);
 
   ip += 4;
 }
 
 void IntCode::op_mul() {
-  int a = get_param(1);
-  int b = get_param(2);
-  int x = a * b;
+  long a = get_param(1);
+  long b = get_param(2);
+  long x = a * b;
 
-  at(at(ip+3)) = x;
+  set_param(3, x);
 
   ip += 4;
 }
 
 void IntCode::op_input() {
   if(inputs.size()) {
-    int x = inputs.front();
+    long x = inputs.front();
     inputs.pop();
-    at(at(ip+1)) = x;
+    set_param(1, x);
     ip += 2;
   } else {
     paused = true;
@@ -128,14 +176,14 @@ void IntCode::op_input() {
 }
 
 void IntCode::op_output() {
-  int x = get_param(1);
+  long x = get_param(1);
   outputs.push(x);
   ip += 2;
 }
 
 void IntCode::op_jump_if_true() {
-  int a = get_param(1);
-  int b = get_param(2);
+  long a = get_param(1);
+  long b = get_param(2);
 
   if(a) {
     ip = b;
@@ -145,8 +193,8 @@ void IntCode::op_jump_if_true() {
 }
 
 void IntCode::op_jump_if_false() {
-  int a = get_param(1);
-  int b = get_param(2);
+  long a = get_param(1);
+  long b = get_param(2);
 
   if(!a) {
     ip = b;
@@ -156,21 +204,27 @@ void IntCode::op_jump_if_false() {
 }
 
 void IntCode::op_lt() {
-  int a = get_param(1);
-  int b = get_param(2);
-  int x = a < b;
+  long a = get_param(1);
+  long b = get_param(2);
+  long x = a < b;
 
-  at(at(ip+3)) = x;
+  set_param(3, x);
 
   ip += 4;
 }
 
 void IntCode::op_eq() {
-  int a = get_param(1);
-  int b = get_param(2);
-  int x = a == b;
+  long a = get_param(1);
+  long b = get_param(2);
+  long x = a == b;
 
-  at(at(ip+3)) = x;
+  set_param(3, x);
 
   ip += 4;
+}
+
+void IntCode::op_adjust_relative_base() {
+  long a = get_param(1);
+  relative_base += a;
+  ip += 2;
 }

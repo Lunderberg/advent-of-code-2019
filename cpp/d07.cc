@@ -4,8 +4,8 @@
 #include "IntCode.hh"
 #include "ReadInputs.hh"
 
-int test_sequence(const std::vector<int>& memory,
-                  const std::vector<int>& seq) {
+long test_sequence(const std::vector<long>& memory,
+                  const std::vector<long>& seq) {
   std::vector<IntCode> interpreters;
 
   for(auto val : seq) {
@@ -14,8 +14,8 @@ int test_sequence(const std::vector<int>& memory,
     interp.send_input(val);
   }
 
-  int signal = 0;
-  int i_interp = 0;
+  long signal = 0;
+  long i_interp = 0;
 
   while(true) {
     auto& interp = interpreters.at(i_interp % interpreters.size());
@@ -46,10 +46,10 @@ int main(int argc, char** argv) {
 
   // Part a
   {
-    std::vector<int> seq{0,1,2,3,4};
-    int best_seq_val = 0;
+    std::vector<long> seq{0,1,2,3,4};
+    long best_seq_val = 0;
     do{
-      int this_seq_val = test_sequence(memory, seq);
+      long this_seq_val = test_sequence(memory, seq);
       if(this_seq_val > best_seq_val) {
         best_seq_val = this_seq_val;
       }
@@ -59,10 +59,10 @@ int main(int argc, char** argv) {
 
   // Part b
   {
-    std::vector<int> seq{5,6,7,8,9};
-    int best_seq_val = 0;
+    std::vector<long> seq{5,6,7,8,9};
+    long best_seq_val = 0;
     do{
-      int this_seq_val = test_sequence(memory, seq);
+      long this_seq_val = test_sequence(memory, seq);
       if(this_seq_val > best_seq_val) {
         best_seq_val = this_seq_val;
       }

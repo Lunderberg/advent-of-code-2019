@@ -3,7 +3,7 @@
 #include "ReadInputs.hh"
 #include "IntCode.hh"
 
-int apply_func(int a, int b, std::vector<int> memory) {
+int apply_func(int a, int b, std::vector<long> memory) {
   memory[1] = a;
   memory[2] = b;
 
